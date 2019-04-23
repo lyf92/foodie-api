@@ -1,0 +1,26 @@
+version: '3.7'
+
+services:
+  mongo:
+    restart: always
+    image: mongo
+    container_name: foodie-mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=foodie
+      - MONGO_INITDB_ROOT_PASSWORD=foodie
+      - MONGO_INITDB_DATABASE=foodie
+    ports:
+      - 27018:27017
+    volumes:
+      - ./mongo-init:/docker-entrypoint-initdb.d/mongo-init:ro
+    command: mongod --smallfiles --logpath=/dev/null
+
+  foodie:
+    build: .
+    restart: always
+    container_name: foodie
+    ports:
+      - 8182:8080
+    working_dir: /opt/app
+    depends_on:
+      - mongo
