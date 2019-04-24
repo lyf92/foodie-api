@@ -1,5 +1,6 @@
 package com.lyf.foodie.controller;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ public class VideoControllerTest {
     private MockMvc mvc;
 
     @Test
+    @Ignore
     public void should_return_upload_file_name() throws Exception {
         File file = new File("src/test/resources/test.mp4");
         MockMultipartFile multipartFile = new MockMultipartFile("video", new FileInputStream(file));
