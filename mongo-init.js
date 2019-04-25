@@ -1,4 +1,4 @@
-let res = [
+var res = [
   "use foodie;",
   db.createUser({
     user: 'foodie',
