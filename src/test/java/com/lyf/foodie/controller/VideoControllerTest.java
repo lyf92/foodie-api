@@ -1,12 +1,11 @@
 package com.lyf.foodie.controller;
 
+import com.lyf.foodie.service.VideoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -26,10 +25,7 @@ public class VideoControllerTest {
     private MockMvc mvc;
 
     @MockBean
-    private GridFsTemplate gridFsTemplate;
-
-    @MockBean
-    private MongoTemplate mongoTemplate;
+    private VideoService videoService;
 
     @Test
     public void should_upload_file_successfully() throws Exception {
