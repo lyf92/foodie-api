@@ -68,13 +68,13 @@ public class VideoService {
 
         if(!dest.getParentFile().exists()) {
             log.debug("创建新目录！");
-            dest.getParentFile().mkdir();
+            dest.getParentFile().mkdirs();
         }
 
         try {
             file.transferTo(dest);
         } catch (IOException e) {
-            log.error("上传文件至服务器失败！");
+            log.error("上传文件至服务器失败！", e);
             // TODO: throw exception
             return null;
         }

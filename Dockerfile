@@ -10,4 +10,4 @@ COPY build/libs/foodie-0.0.1-SNAPSHOT.jar $PROJECT_HOME/foodie-0.0.1-SNAPSHOT.ja
 
 WORKDIR $PROJECT_HOME
 
-CMD ["java", "-jar","./foodie-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "-Dspring.profiles.active=dev", "./foodie-0.0.1-SNAPSHOT.jar"]

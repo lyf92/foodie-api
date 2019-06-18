@@ -17,18 +17,6 @@ public class VideoConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        /*if(basePath.equals("") || basePath.equals("${video.base-path}")){
-            String path = VideoConfig.class.getClassLoader().getResource("").getPath();
-            log.info("1.上传配置类imagesPath==" + path + "\n");
-            if(path.indexOf(".jar")>0){
-                path = path.substring(0, path.indexOf(".jar"));
-            }else if(path.indexOf("classes")>0){
-                path = "file:"+path.substring(0, path.indexOf("classes"));
-            }
-            path = path.substring(0, path.lastIndexOf("/"))+"/images/";
-            basePath = path;
-        }*/
-        log.info("begin addResourceHandlers.");
         registry
                 .addResourceHandler("/videos/**")
                 .addResourceLocations("file:" + basePath);
