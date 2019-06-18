@@ -39,7 +39,7 @@ public class VideoService {
         }
 
         mongoTemplate.remove(query, Video.class);
-        File file = new File(videoBasePath + videos.get(0).getName() + "123");
+        File file = new File(videoBasePath + videos.get(0).getName());
         try {
             FileUtils.forceDelete(file);
         } catch (IOException e) {
