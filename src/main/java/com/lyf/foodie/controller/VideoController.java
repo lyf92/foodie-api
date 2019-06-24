@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @RestController
@@ -22,8 +25,9 @@ public class VideoController {
     private VideoService videoService;
 
     @PostMapping("/files")
-    public Video upload(@RequestParam("video") MultipartFile file) {
-        return videoService.uploadVideo(file);
+    public Video upload(@RequestParam("video") @Valid @NotNull MultipartFile file,
+                        @RequestParam("description") @Valid @NotEmpty String description) {
+        return videoService.uploadVideo(file, description);
     }
 
     @GetMapping("/files")

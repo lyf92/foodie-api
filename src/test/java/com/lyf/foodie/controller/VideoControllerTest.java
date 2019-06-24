@@ -33,7 +33,8 @@ public class VideoControllerTest {
         MockMultipartFile multipartFile = new MockMultipartFile("video", "video", MediaType.MULTIPART_FORM_DATA_VALUE, new FileInputStream(file));
 
         mvc.perform(multipart("/api/files")
-                    .file(multipartFile))
+                .file(multipartFile)
+                .param("description", "这是一个神奇的视频～"))
                 .andExpect(status().isOk());
     }
 }

@@ -48,7 +48,7 @@ public class VideoService {
         }
     }
 
-    public Video uploadVideo(MultipartFile file) {
+    public Video uploadVideo(MultipartFile file, String description) {
         if (file.isEmpty()) {
             log.error("上传视频不可为空！");
             // TODO: throw exception
@@ -82,6 +82,7 @@ public class VideoService {
         Video newVideo = Video.builder()
                 .name(fileName)
                 .url(url)
+                .description(description)
                 .createTime(new Date())
                 .updateTime(new Date())
                 .build();
