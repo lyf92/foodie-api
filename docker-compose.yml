@@ -15,6 +15,16 @@ services:
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
     command: mongod --auth
 
+  postgres:
+    image: postgres
+    container_name: foodie-postgres
+    environment:
+      - POSTGRES_PASSWORD=foodie
+      - POSTGRES_USER=foodie
+      - POSTGRES_DB=foodie
+    ports:
+      - 5501:5432
+
   foodie:
     build: .
     restart: always
@@ -23,4 +33,4 @@ services:
       - 8182:8080
     working_dir: /opt/app
     depends_on:
-      - mongo
+      - postgres

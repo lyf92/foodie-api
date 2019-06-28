@@ -1,7 +1,8 @@
 package com.lyf.foodie.controller;
 
-import com.lyf.foodie.model.Video;
+import com.lyf.foodie.entity.Video;
 import com.lyf.foodie.service.VideoService;
+import com.lyf.foodie.vo.VideoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,8 +32,8 @@ public class VideoController {
     }
 
     @GetMapping("/files")
-    public List<Video> getFiles() {
-        return videoService.getVideos();
+    public List<VideoVO> getFiles(@RequestParam(value = "userId", required = false) String userId) {
+        return videoService.getVideos(userId);
     }
 
     @GetMapping("/files/{fileId}")
@@ -43,5 +44,16 @@ public class VideoController {
     @DeleteMapping("/files/{fileId}")
     public void delete(@PathVariable(name = "fileId") String fileId) {
         videoService.delete(fileId);
+    }
+
+    @PostMapping("/users/{userId}/files/{fileId}")
+    public void favorite(@PathVariable("userId") String userId,
+                         @PathVariable("fileId") String fileId,
+                         @RequestParam(value = "isFav", required = false) Boolean isFav) {
+        if (isFav == null || isFav) {
+            videoService.favorite(userId, fileId);
+        } else {
+            videoService.unFavorite(userId, fileId);
+        }
     }
 }

@@ -1,26 +1,28 @@
 package com.lyf.foodie.service;
 
+import com.lyf.foodie.entity.User;
+import com.lyf.foodie.entity.Video;
 import com.lyf.foodie.exceptions.BaseException;
 import com.lyf.foodie.exceptions.ResourceNotFoundException;
-import com.lyf.foodie.model.Video;
+import com.lyf.foodie.repository.UserRepository;
+import com.lyf.foodie.repository.VideoRepository;
+import com.lyf.foodie.vo.VideoVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.lyf.foodie.exceptions.ErrorCode.DELETE_VIDEO_FAILED;
-import static com.lyf.foodie.exceptions.ErrorCode.UPLOAD_VICEO_TO_SERVER_FAILED;
+import static com.lyf.foodie.exceptions.ErrorCode.UPLOAD_VIDEO_TO_SERVER_FAILED;
+import static com.lyf.foodie.exceptions.ErrorCode.USER_IS_NOT_FOUND;
 import static com.lyf.foodie.exceptions.ErrorCode.VIDEO_IS_EXISTED;
 import static com.lyf.foodie.exceptions.ErrorCode.VIDEO_IS_NOT_FOUND;
 
@@ -34,19 +36,17 @@ public class VideoService {
     private String baseUrl;
 
     @Autowired
-    private MongoTemplate mongoTemplate;
+    private VideoRepository videoRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     public void delete(String fileId) {
-        Query query = Query.query(Criteria.where("_id").is(fileId));
+        Video video = videoRepository.findById(fileId).orElseThrow(
+                () -> new ResourceNotFoundException(VIDEO_IS_NOT_FOUND, MessageFormat.format("删除视频失败！id为{0}的视频不存在。", fileId)));
 
-        List<Video> videos = mongoTemplate.find(query, Video.class);
-        if(videos.isEmpty()) {
-            log.error("视频不存在！");
-            throw new ResourceNotFoundException(VIDEO_IS_NOT_FOUND, MessageFormat.format("删除视频失败！id为{0}的视频不存在。", fileId));
-        }
-
-        mongoTemplate.remove(query, Video.class);
-        File file = new File(videoBasePath + videos.get(0).getName());
+        videoRepository.deleteById(fileId);
+        File file = new File(videoBasePath + video.getName());
         try {
             FileUtils.forceDelete(file);
         } catch (IOException e) {
@@ -63,24 +63,28 @@ public class VideoService {
         File dest = new File(path);
         checkFileExistence(fileName, dest);
         createDirectory(dest);
+        uploadToServer(file, dest);
+        return saveToDB(description, fileName);
+    }
 
-        try {
-            file.transferTo(dest);
-        } catch (IOException e) {
-            log.error("上传文件至服务器失败！", e);
-            throw new BaseException(UPLOAD_VICEO_TO_SERVER_FAILED, "上传视频至服务器失败！");
-        }
+    private Video saveToDB(String description, String fileName) {
         String url = baseUrl + "/videos/" + fileName;
         Video newVideo = Video.builder()
                 .name(fileName)
                 .url(url)
                 .description(description)
-                .createTime(new Date())
-                .updateTime(new Date())
                 .build();
-        mongoTemplate.save(newVideo);
-
+        videoRepository.save(newVideo);
         return newVideo;
+    }
+
+    private void uploadToServer(MultipartFile file, File dest) {
+        try {
+            file.transferTo(dest);
+        } catch (IOException e) {
+            log.error("上传文件至服务器失败！", e);
+            throw new BaseException(UPLOAD_VIDEO_TO_SERVER_FAILED, "上传视频至服务器失败！");
+        }
     }
 
     private void createDirectory(File dest) {
@@ -97,12 +101,34 @@ public class VideoService {
         }
     }
 
-    public List<Video> getVideos() {
-        return mongoTemplate.findAll(Video.class);
+    public List<VideoVO> getVideos(String userId) {
+        List<VideoVO> videos = new ArrayList<>();
+        videoRepository.findAll().forEach(video -> {
+            videos.add(VideoVO.buildFrom(video, userId));
+        });
+        return videos;
     }
 
     public Video getVideo(String fileId) {
-        Query query = Query.query(Criteria.where("_id").is(fileId));
-        return mongoTemplate.find(query, Video.class).get(0);
+        return videoRepository.findById(fileId).orElseThrow(
+                () -> new ResourceNotFoundException(VIDEO_IS_NOT_FOUND, MessageFormat.format("id为{0}的视频不存在。", fileId)));
+    }
+
+    public void favorite(String userId, String fileId) {
+        Video video = videoRepository.findById(fileId).orElseThrow(
+                () -> new ResourceNotFoundException(VIDEO_IS_NOT_FOUND, MessageFormat.format("id为{0}的视频不存在。", fileId)));
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException(USER_IS_NOT_FOUND, MessageFormat.format("id为{0}的用户不存在。", userId)));
+        user.addVideo(video);
+        userRepository.save(user);
+    }
+
+    public void unFavorite(String userId, String fileId) {
+        Video video = videoRepository.findById(fileId).orElseThrow(
+                () -> new ResourceNotFoundException(VIDEO_IS_NOT_FOUND, MessageFormat.format("id为{0}的视频不存在。", fileId)));
+        User user = userRepository.findById(userId).orElseThrow(
+                () -> new ResourceNotFoundException(USER_IS_NOT_FOUND, MessageFormat.format("id为{0}的用户不存在。", userId)));
+        user.removeVideo(video);
+        userRepository.save(user);
     }
 }
